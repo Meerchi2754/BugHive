@@ -1,0 +1,2 @@
+ALTER TABLE CLAIMS
+ADD COLUMN verifier_count INTEGER default 0;

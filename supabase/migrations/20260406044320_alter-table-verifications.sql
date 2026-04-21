@@ -1,0 +1,6 @@
+ALTER TABLE verifications
+ALTER COLUMN status EMAILVERIFIERSTATUS DEFAULT 'PENDING';
+
+
+ALTER TABLE verifications
+RENAME COLUMN sended_at TO sent_at;
