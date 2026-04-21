@@ -1,0 +1,2 @@
+CREATE POLICY "USER CAN SELECT THEIR CLAIMS" ON claims FOR
+SELECT USING(auth.uid() = user_id);

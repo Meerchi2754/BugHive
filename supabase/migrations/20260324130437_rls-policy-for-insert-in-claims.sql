@@ -1,0 +1,3 @@
+ALTER TABLE claims ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pr_table ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "USER CAN INSERT INTO CLAIMS TABLE" ON "public"."claims" with check ((auth.uid() = user_id));

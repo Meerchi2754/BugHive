@@ -1,0 +1,2 @@
+ALTER TABLE verifications
+ADD COLUMN user_id UUID NOT NULL REFERENCES users(id);
