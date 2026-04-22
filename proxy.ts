@@ -70,9 +70,9 @@ export async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL("/onboarding/maintainer", req.url));
     } else if (
       proxyData.onboarding_complete &&
-      pathname !== "/dashboard/maintainer"
+      pathname !== "/maintainer/shortlist"
     ) {
-      return NextResponse.redirect(new URL("/dashboard/maintainer", req.url));
+      return NextResponse.redirect(new URL("/maintainer/shortlist", req.url));
     }
   }
 
@@ -82,7 +82,7 @@ export async function proxy(req: NextRequest) {
     proxyData.role === "CONTRIBUTOR"
   ) {
     return NextResponse.redirect(new URL("/onboarding", req.url));
-  } 
+  }
 
   if (
     proxyData.role !== "CONTRIBUTOR" &&

@@ -126,6 +126,135 @@ export type Database = {
           },
         ]
       }
+      saved_searches: {
+        Row: {
+          created_at: string | null
+          filters: Json
+          id: string
+          maintainer_id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          filters: Json
+          id?: string
+          maintainer_id: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          filters?: Json
+          id?: string
+          maintainer_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_searches_maintainer_id_fkey"
+            columns: ["maintainer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      search_history: {
+        Row: {
+          filters: Json
+          id: string
+          maintainer_id: string
+          searched_at: string | null
+        }
+        Insert: {
+          filters: Json
+          id?: string
+          maintainer_id: string
+          searched_at?: string | null
+        }
+        Update: {
+          filters?: Json
+          id?: string
+          maintainer_id?: string
+          searched_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_history_maintainer_id_fkey"
+            columns: ["maintainer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shortlist_contributors: {
+        Row: {
+          added_at: string | null
+          contributor_id: string
+          id: string
+          note: string | null
+          shortlist_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          contributor_id: string
+          id?: string
+          note?: string | null
+          shortlist_id: string
+        }
+        Update: {
+          added_at?: string | null
+          contributor_id?: string
+          id?: string
+          note?: string | null
+          shortlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shortlist_contributors_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shortlist_contributors_shortlist_id_fkey"
+            columns: ["shortlist_id"]
+            isOneToOne: false
+            referencedRelation: "shortlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shortlists: {
+        Row: {
+          created_at: string | null
+          id: string
+          maintainer_id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          maintainer_id: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          maintainer_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shortlists_maintainer_id_fkey"
+            columns: ["maintainer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           account_mode: Database["public"]["Enums"]["accountmode"] | null
