@@ -3,8 +3,7 @@ import { createClaims } from "@/services/dashboard/createClaims";
 import { createPR } from "@/services/dashboard/createPR";
 import { NextRequest, NextResponse } from "next/server";
 import { Octokit } from "octokit";
-import { addClaims } from "@/controller/dashboard/contributor/addClaims";
-import { findAllPR } from "@/utils/dashboard/contributors/findAllPR";
+
 
 export async function POST(req: NextRequest) {
   try {
