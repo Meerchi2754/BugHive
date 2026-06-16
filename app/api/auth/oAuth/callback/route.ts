@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } =
+      await supabase.auth.exchangeCodeForSession(code);
     if (error) {
       console.log("Error in fetching GITHUB ERROR.", error);
       return NextResponse.json(
@@ -33,7 +34,9 @@ export async function GET(req: NextRequest) {
     }
 
     const appProvider = data.user.app_metadata.provider;
-    const existingUser: UserDB = await findUser(data.user.email!);
+    const existingUser: UserDB = await findUser(
+      data.user.email!,
+    );
     if (existingUser) {
       if (!existingUser.github_connected) {
         if (action === "connect_github") {
@@ -44,25 +47,40 @@ export async function GET(req: NextRequest) {
             data.user.email!,
           );
         }
-        return NextResponse.redirect(new URL("/dashboard/claims", req.url));
+        return NextResponse.redirect(
+          new URL("/dashboard/claims", req.url),
+        );
       }
 
-      if (existingUser.role === "VERIFIER" && action === "redirect" && token) {
+      if (
+        existingUser.role === "VERIFIER" &&
+        action === "redirect" &&
+        token
+      ) {
         return NextResponse.redirect(
           new URL(`/verify/claims/${token}`, req.url),
         );
-      } else if (existingUser.role === "VERIFIER" && action === "register") {
-        return NextResponse.redirect(new URL("/verify/claims", req.url));
+      } else if (
+        existingUser.role === "VERIFIER" &&
+        action === "register"
+      ) {
+        return NextResponse.redirect(
+          new URL("/verify/claims", req.url),
+        );
       } else if (
         existingUser.role === "CONTRIBUTOR" &&
         action === "redirect" &&
         token
       ) {
-        return NextResponse.redirect(new URL("/dashboard/verifier", req.url));
+        return NextResponse.redirect(
+          new URL("/dashboard/verifier", req.url),
+        );
       }
 
       if (existingUser.onboarding_complete) {
-        return NextResponse.redirect(new URL("/dashboard/claims", req.url));
+        return NextResponse.redirect(
+          new URL("/dashboard/claims", req.url),
+        );
       }
 
       if (
@@ -73,18 +91,21 @@ export async function GET(req: NextRequest) {
           new URL("/onboarding/maintainer", req.url),
         );
       }
-      return NextResponse.redirect(new URL("/onboarding", req.url));
+      return NextResponse.redirect(
+        new URL("/onboarding", req.url),
+      );
     }
     if (appProvider === "github") {
       const username = data.user?.user_metadata.user_name;
-      const email = data.user?.email!;
-      const github_avatar_url = data.user?.user_metadata.avatar_url;
+      const email = data.user?.email;
+      const github_avatar_url =
+        data.user?.user_metadata.avatar_url;
 
       await userController(
         username,
-        email,
+        email!,
         github_avatar_url!,
-        data.session?.provider_token!,
+        data.session.provider_token!,
         role!,
       );
     } else if (appProvider === "google") {
@@ -95,17 +116,35 @@ export async function GET(req: NextRequest) {
     }
 
     if (role === "VERIFIER" && action === "redirect") {
-      return NextResponse.redirect(new URL(`/verify/claims/${token}`, req.url));
-    } else if (role === "VERIFIER" && action === "register") {
-      return NextResponse.redirect(new URL("/verify/claims", req.url));
+      return NextResponse.redirect(
+        new URL(`/verify/claims/${token}`, req.url),
+      );
+    } else if (
+      role === "VERIFIER" &&
+      action === "register"
+    ) {
+      return NextResponse.redirect(
+        new URL("/verify/claims", req.url),
+      );
     }
 
     if (role === "MAINTAINER" && action === "register") {
-      return NextResponse.redirect(new URL("/onboarding/maintainer", req.url));
+      return NextResponse.redirect(
+        new URL("/maintainer/shortlist", req.url),
+      );
     }
-    return NextResponse.redirect(new URL("/onboarding", req.url));
-  } catch (error: any) {
-    console.log(error.message);
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.redirect(
+      new URL("/onboarding", req.url),
+    );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unknown Error";
+    console.log(message);
+    return NextResponse.json(
+      { error: message },
+      { status: 400 },
+    );
   }
 }

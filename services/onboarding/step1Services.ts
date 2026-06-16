@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/client";
-export async function step1Services(username: string, email: string) {
+export async function step1Services(
+  username: string,
+  email: string,
+) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("users")

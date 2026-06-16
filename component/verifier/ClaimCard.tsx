@@ -27,16 +27,21 @@ export function VerifierClaimCard({
 
   const claim_date = claimDate.toUTCString();
   const expiryDate = claimDate.getTime() + 24 * 60 * 60 * 1000;
-  const [expiryTime, setExpiryTime] = useState(expiryDate - Date.now());
+  const [expiryTime, setExpiryTime] = useState(0);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // Set initial time on client mount to avoid hydration mismatch
+    setIsClient(true);
+    setExpiryTime(expiryDate - Date.now());
+
     const interval = setInterval(() => {
       const remaining = expiryDate - Date.now();
       setExpiryTime(remaining > 0 ? remaining : 0);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [expiryTime]);
+  }, [expiryDate]);
 
   const formatExpiry = (ms: number) => {
     const totalSecond = Math.floor(ms / 1000);
@@ -48,7 +53,7 @@ export function VerifierClaimCard({
     return `${hours}h ${minute}m ${seconds}s`;
   };
 
-  const isEditable = expiryTime > 0;
+  const isEditable = isClient && expiryTime > 0;
   return (
     <>
       <div className="border border-gray-600  rounded p-2  bg-zinc-950">

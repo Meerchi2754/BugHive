@@ -26,6 +26,12 @@ export const metadata: Metadata = {
   title: "Bug Hive",
   description:
     "BugHive is a structured open source contribution portfolio where every claimed contribution is backed by alive GitHub pull request and reviewed by a project maintainer or senior peer through a structured impact rubric",
+  icons: {
+    icon: [
+      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon.png', sizes: '192x192', type: 'image/png' }, // Great for mobile bookmarks
+    ],
+  },
 };
 
 export default function RootLayout({
