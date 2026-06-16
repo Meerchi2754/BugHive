@@ -1,3 +1,4 @@
+"use client"
 import { useState, useEffect } from "react";
 
 export function CountDown() {
@@ -23,9 +24,19 @@ export function CountDown() {
     return time;
   };
 
-  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // Initialize on client to avoid hydration mismatch
+    setIsClient(true);
+    setTimeLeft(calculateTimeLeft());
+
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
@@ -36,8 +47,14 @@ export function CountDown() {
     <>
       <h2>Count </h2>
       <p>
-        {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m{" "}
-        {timeLeft.seconds}s
+        {isClient ? (
+          <>
+            {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m{" "}
+            {timeLeft.seconds}s
+          </>
+        ) : (
+          <span>Loading...</span>
+        )}
       </p>
     </>
   );

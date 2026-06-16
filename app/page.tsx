@@ -3,10 +3,46 @@ import { motion } from "framer-motion";
 import { ButtonComp } from "@/component/ui/button";
 import { useRouter } from "next/navigation";
 import { encrypt } from "@/lib/crypto";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
+  if (!isMounted) {
+    return (
+      <div className="flex flex-row min-w-screen min-h-screen bg-zinc-50 font-sans">
+        <div className="bg-radial from bg-gray-800 to bg-black flex justify-center items-center flex-1 p-10">
+          <div>
+            <h1 className="text-white text-4xl font-bold">BUGHIVE</h1>
+            <h4 className="text-gray-300 mt-4">
+              BugHive is a structured open source contribution portfolio where
+              every claimed contribution is backed by alive GitHub pull request
+              and reviewed by a project maintainer or senior peer through a
+              structured impact rubric
+            </h4>
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col gap-3 justify-center items-center">
+          <p className="text-black text-4xl font-sans">Select your Role:</p>
+          <button className="p-4 bg-blue-300 text-black rounded-4xl font-semibold cursor-pointer">
+            I'm a Developer/Contributor
+          </button>
+          <button className="p-4 bg-blue-300 text-black rounded-4xl font-semibold cursor-pointer">
+            I'm a Verifier/Project Manager
+          </button>
+          <button className="p-4 bg-blue-300 text-black rounded-4xl font-semibold cursor-pointer">
+            I'm a Maintainer/Hiring Manager
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-row    min-w-screen min-h-screen  bg-zinc-50 font-sans  ">
       <motion.div

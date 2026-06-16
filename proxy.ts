@@ -13,9 +13,11 @@ export async function proxy(req: NextRequest) {
       cookies: {
         getAll: () => req.cookies.getAll(),
         setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            res.cookies.set(name, value, options);
-          });
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              res.cookies.set(name, value, options);
+            },
+          );
         },
       },
     },
@@ -53,13 +55,17 @@ export async function proxy(req: NextRequest) {
       onboarding_complete: userDB.onboarding_complete,
     };
 
-    res.cookies.set("x-proxy-data", JSON.stringify(proxyData), {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 1,
-      path: "/",
-    });
+    res.cookies.set(
+      "x-proxy-data",
+      JSON.stringify(proxyData),
+      {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 1,
+        path: "/",
+      },
+    );
   }
 
   if (proxyData.role === "MAINTAINER") {
@@ -67,12 +73,16 @@ export async function proxy(req: NextRequest) {
       !proxyData.onboarding_complete &&
       pathname !== "/onboarding/maintainer"
     ) {
-      return NextResponse.redirect(new URL("/onboarding/maintainer", req.url));
+      return NextResponse.redirect(
+        new URL("/onboarding/maintainer", req.url),
+      );
     } else if (
       proxyData.onboarding_complete &&
-      pathname !== "/dashboard/maintainer"
+      pathname !== "/maintainer/shortlist"
     ) {
-      return NextResponse.redirect(new URL("/dashboard/maintainer", req.url));
+      return NextResponse.redirect(
+        new URL("/maintainer/shortlist", req.url),
+      );
     }
   }
 
@@ -81,18 +91,27 @@ export async function proxy(req: NextRequest) {
     pathname !== "/onboarding" &&
     proxyData.role === "CONTRIBUTOR"
   ) {
-    return NextResponse.redirect(new URL("/onboarding", req.url));
-  } 
+    return NextResponse.redirect(
+      new URL("/onboarding", req.url),
+    );
+  }
 
   if (
     proxyData.role !== "CONTRIBUTOR" &&
     pathname.startsWith("/dashboard/claims")
   ) {
-    return NextResponse.redirect(new URL("/register", req.url));
+    return NextResponse.redirect(
+      new URL("/register", req.url),
+    );
   }
 
-  if (proxyData.role !== "ADMIN" && pathname.startsWith("/admin")) {
-    return NextResponse.redirect(new URL("/noAccess", req.url));
+  if (
+    proxyData.role !== "ADMIN" &&
+    pathname.startsWith("/admin")
+  ) {
+    return NextResponse.redirect(
+      new URL("/noAccess", req.url),
+    );
   }
 
   return res;
