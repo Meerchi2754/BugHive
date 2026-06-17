@@ -280,6 +280,7 @@ export type Database = {
           role: Database["public"]["Enums"]["role"] | null
           techstack: string[] | null
           token: string | null
+          total_impact_score: number
           updated_at: string
           username: string | null
         }
@@ -307,6 +308,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["role"] | null
           techstack?: string[] | null
           token?: string | null
+          total_impact_score?: number
           updated_at?: string
           username?: string | null
         }
@@ -334,6 +336,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["role"] | null
           techstack?: string[] | null
           token?: string | null
+          total_impact_score?: number
           updated_at?: string
           username?: string | null
         }

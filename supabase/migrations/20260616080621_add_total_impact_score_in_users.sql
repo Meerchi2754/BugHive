@@ -1,0 +1,2 @@
+ALTER TABLE users
+ADD COLUMN total_impact_score INTEGER NOT NULL DEFAULT 0;

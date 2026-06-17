@@ -1,14 +1,12 @@
 import { createClient } from "@/lib/supabase/admin";
-import { Database } from "@/types/database.types";
 
 export interface SearchFilters {
-  ecosystem?: string[];
-  minImpactScore?: number;
-  claimTypes?: Database["public"]["Enums"]["claimtype"][];
-  languages?: string[];
-  availability?: "remote" | "any";
-  keyword?: string;
   username?: string;
+}
+
+export interface ContributorClaim {
+  verifier_count: number | null;
+  verification_status: string | null;
 }
 
 export interface ContributorSearchResult {
@@ -23,17 +21,11 @@ export interface ContributorSearchResult {
   ecosystem: string[] | null;
   languages: string[] | null;
   techstack: string[] | null;
-  totalImpactScore: number;
-  verifiedClaimsCount: number;
-  claims: Array<{
-    id: string;
-    claim_title: string | null;
-    claim_type: Database["public"]["Enums"]["claimtype"] | null;
-    claim_impact_score: number;
-    pr_url: string;
-    created_at: string;
-    verification_status: Database["public"]["Enums"]["verificationstatus"] | null;
-  }>;
+  total_impact_score: number | null;
+  claims: ContributorClaim[];
+  // Computed fields
+  total_verifier_count: number;
+  accepted_claims_count: number;
 }
 
 export async function searchContributorsAction(
@@ -57,11 +49,21 @@ export async function searchContributorsAction(
         isRemote,
         ecosystem,
         languages,
-        techstack
-      `
+        techstack,
+        total_impact_score,
+        claims!fk_users (
+          verifier_count,
+          verification_status
+        )
+        `
       )
       .eq("role", "CONTRIBUTOR");
 
+    if (filters.username) {
+      query = query.or(
+        `username.ilike.%${filters.username}%,email.ilike.%${filters.username}%,github_username.ilike.%${filters.username}%`
+      );
+    }
     // Execute the query
     const { data: users, error: usersError } = await query;
 
@@ -77,66 +79,23 @@ export async function searchContributorsAction(
       return { success: true, data: [] };
     }
 
-    // Step 7: Fetch claims for all users
-    const userIds = users.map((u) => u.id);
-
-    const { data: allClaims, error: claimsError } = await supabase
-      .from("claims")
-      .select(
-        `
-        id,
-        user_id,
-        claim_title,
-        claim_type,
-        claim_impact_score,
-        pr_url,
-        created_at,
-        verification_status
-      `
-      )
-      .in("user_id", userIds)
-      .eq("verification_status", "ACCEPT");
-
-    if (claimsError) {
-      console.error("Error fetching claims:", claimsError);
-      return {
-        success: false,
-        error: "Failed to fetch claims. Please try again.",
-      };
-    }
-
-    // Step 8: Group claims by user_id
-    const claimsByUserId: { [key: string]: any[] } = {};
-    (allClaims || []).forEach((claim) => {
-      if (!claimsByUserId[claim.user_id]) {
-        claimsByUserId[claim.user_id] = [];
-      }
-      claimsByUserId[claim.user_id].push(claim);
-    });
-
-    // Step 9: Process and filter results
-    const results: ContributorSearchResult[] = [];
-
-    for (const user of users) {
-      const userClaims = claimsByUserId[user.id] || [];
-
-      // Filter by claim type if specified
-      let filteredClaims = userClaims;
-      if (filters.claimTypes && filters.claimTypes.length > 0) {
-        filteredClaims = userClaims.filter((claim) =>
-          filters.claimTypes!.includes(claim.claim_type!)
-        );
-      }
-
-      // Calculate total impact score
-      const totalImpactScore = filteredClaims.reduce(
-        (sum, claim) => sum + (claim.claim_impact_score || 0),
+    // Map users to search results
+    const results: ContributorSearchResult[] = users.map((user) => {
+      const allClaims = user.claims || [];
+      
+      // Filter only accepted claims
+      const acceptedClaims = allClaims.filter(
+        (claim) => claim.verification_status === "ACCEPT"
+      );
+      
+      // Calculate computed fields
+      const total_verifier_count = acceptedClaims.reduce(
+        (sum, claim) => sum + (claim.verifier_count || 0),
         0
       );
+      const accepted_claims_count = acceptedClaims.length;
 
-
-      // Add to results
-      results.push({
+      return {
         id: user.id,
         username: user.username!,
         github_username: user.github_username,
@@ -148,26 +107,16 @@ export async function searchContributorsAction(
         ecosystem: user.ecosystem,
         languages: user.languages,
         techstack: user.techstack,
-        totalImpactScore,
-        verifiedClaimsCount: filteredClaims.length,
-        claims: filteredClaims.map((claim) => ({
-          id: claim.id,
-          claim_title: claim.claim_title,
-          claim_type: claim.claim_type,
-          claim_impact_score: claim.claim_impact_score,
-          pr_url: claim.pr_url,
-          created_at: claim.created_at,
-          verification_status: claim.verification_status,
-        })),
-      });
-    }
-
-    // Step 10: Sort by total impact score descending
-    results.sort((a, b) => b.totalImpactScore - a.totalImpactScore);
+        total_impact_score: user.total_impact_score,
+        claims: acceptedClaims,
+        total_verifier_count,
+        accepted_claims_count,
+      };
+    });
 
     return { success: true, data: results };
   } catch (error: any) {
-    console.error("Error in searchContributorsAction:", error);
+    console.log("Error in searchContributorsAction:", error);
     return {
       success: false,
       error: error?.message || "An unexpected error occurred.",
