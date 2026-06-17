@@ -60,7 +60,7 @@ export default function SearchPage() {
         toast.info("No contributors found matching your criteria.");
       }
     } catch (error: any) {
-      console.error(error);
+      // console.log(error);
       toast.error("Search failed. Please try again.");
       setSearchResults([]);
     } finally {
@@ -100,7 +100,7 @@ export default function SearchPage() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Search contributors by username..."
+                placeholder="Search contributors by Username, Email, Github Username..."
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -174,11 +174,11 @@ export default function SearchPage() {
                     <div className="flex gap-6 mb-3">
                       <div className="bg-blue-50 px-4 py-2 rounded-lg">
                         <p className="text-sm text-gray-600">Impact Score</p>
-                        <p className="text-2xl font-bold text-blue-600">{contributor.totalImpactScore}</p>
+                        <p className="text-2xl font-bold text-blue-600">{contributor.total_impact_score}</p>
                       </div>
                       <div className="bg-purple-50 px-4 py-2 rounded-lg">
                         <p className="text-sm text-gray-600">Verified Claims</p>
-                        <p className="text-2xl font-bold text-purple-600">{contributor.verifiedClaimsCount}</p>
+                        <p className="text-2xl font-bold text-purple-600">{contributor.accepted_claims_count}</p>
                       </div>
                     </div>
 
