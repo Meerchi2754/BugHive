@@ -70,7 +70,7 @@ export default function Home() {
           <span
             style={{
               fontFamily: "'Bitcount Grid Single', sans-serif",
-              fontSize: "1.1rem",
+              fontSize: "2.9rem",
               color: "#60a5fa",
               letterSpacing: "0.18em",
             }}
