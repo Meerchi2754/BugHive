@@ -12,10 +12,10 @@ import {
   EmailSchemaType,
 } from "@/lib/validations/emailLogin";
 import { EmailAction } from "@/app/actions/auth/email.action";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "react-toastify";
 
-export default function SignUp() {
+function SignUpForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token?");
   const role = searchParams.get("role");
@@ -169,5 +169,13 @@ export default function SignUp() {
         />
       </div>
     </>
+  );
+}
+
+export default function SignUp() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignUpForm />
+    </Suspense>
   );
 }
