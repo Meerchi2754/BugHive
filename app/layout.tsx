@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/authContext";
 import { FormProvider } from "@/context/formContext";
 import ToastProvider from "@/component/common/ToastProvider";
 import QueryProvider from "@/lib/providers/tanStackQuery";
+import { ThemeProvider } from "@/context/themeContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,12 +45,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased`}
       >
-        <AuthProvider>
-          <FormProvider>
-            <QueryProvider>{children}</QueryProvider>
-            <ToastProvider />
-          </FormProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <FormProvider>
+              <QueryProvider>{children}</QueryProvider>
+              <ToastProvider />
+            </FormProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

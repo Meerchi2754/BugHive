@@ -1,10 +1,16 @@
 "use client";
 import { allClaim } from "@/lib/claims/allClaim";
 import { useQuery } from "@tanstack/react-query";
-import { use, useEffect, useRef, useState } from "react";
-import { ButtonComp } from "@/component/ui/button";
-import { addEvidences } from "@/app/actions/evidence/addEvidence";
-import { toast } from "react-toastify";
+import { use } from "react";
+import { EvidenceHeader, EvidenceHeaderSkeleton } from "@/component/evidence/EvidenceHeader";
+import { ContributionSummary, ContributionSummarySkeleton } from "@/component/evidence/ContributionSummary";
+import { VerificationSummary, VerificationSummarySkeleton } from "@/component/evidence/VerificationSummary";
+import { ChangedFiles, ChangedFilesSkeleton } from "@/component/evidence/ChangedFiles";
+import { LinkedIssue } from "@/component/evidence/LinkedIssue";
+import { SupportingEvidence, SupportingEvidenceSkeleton } from "@/component/evidence/SupportingEvidence";
+import { FiAlertCircle } from "react-icons/fi";
+
+import { useTheme } from "@/context/themeContext";
 
 export default function EvidencePage({
   params,
@@ -12,177 +18,94 @@ export default function EvidencePage({
   params: Promise<{ slugs: string }>;
 }) {
   const { slugs } = use(params);
-  const { data, isLoading, isFetching, isError } = useQuery({
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
+  const { data, isLoading, isFetching, isError, error } = useQuery({
     queryKey: ["claims", { id: slugs }],
     queryFn: () => allClaim(slugs),
     staleTime: 1000 * 60 * 60 * 5,
   });
-  const isPresent = (data?.length ?? 0) > 0;
+
+  const loading = isLoading || isFetching;
   const claimData = data?.[0] ?? null;
-  const [modal, setModal] = useState<boolean>(false);
-
-  // const [countLink1, setCountLink1] = useState<number>(
-  //   claimData?.pr_table.evidences.length > 0
-  //     ? claimData?.pr_table.evidences.length
-  //     : 0,
-  // );
-  const [supplymentaryLink, setSupplymentaryLink] = useState<string[]>([]);
-  const countLink = supplymentaryLink.length;
-  const [submit, setSubmit] = useState<boolean>(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const addEvidence = async () => {
-    try {
-      const link = inputRef.current?.value;
-      const data = await addEvidences(link!, claimData?.pr_table.id!);
-      console.log("data:", data);
-      setSupplymentaryLink([...supplymentaryLink, link!]);
-      setSubmit(!submit);
-      setModal(!modal);
-      toast.success("Evidence Added.");
-    } catch (error) {
-      toast.error("Evindence Adding failed.");
-    }
-  };
-
-  useEffect(() => {
-    //console.log("dors");
-    if (claimData?.pr_table.evidences) {
-      setSupplymentaryLink(claimData.pr_table.evidences);
-    }
-  }, [claimData]);
+  const isPresent = !!claimData;
 
   return (
-    <div className="min-h-screen w-full">
-      <main className="max-w-2xl mx-auto px-4 py-10 text-white">
-        <h1 className="text-green-400 text-3xl font-bold mb-8">
-          Evidence Record
-        </h1>
-        {isLoading || isFetching ? (
-          <div className="w-full animate-pulse text-center text-2xl">
-            <p>Loading...</p>
+    // Outer shell — background with subtle dot grid matching theme
+    <div
+      className={`min-h-screen w-full transition-colors duration-150 ${isDark ? "text-[#F3F4F6]" : "text-gray-900"}`}
+      style={{
+        backgroundColor: isDark ? "#090B0D" : "#ffffff",
+        backgroundImage: isDark
+          ? "radial-gradient(#24282D 1px, transparent 1px)"
+          : "radial-gradient(#e5e7eb 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
+      }}
+    >
+      {/* Centered content container */}
+      <div className="max-w-[1150px] mx-auto px-4 sm:px-6 lg:px-10 py-8 space-y-8">
+
+        {/* ── HEADER ─────────────────────────────────── */}
+        {loading ? (
+          <EvidenceHeaderSkeleton />
+        ) : isError ? (
+          <div className="flex items-center gap-3 py-4 text-red-400 text-sm">
+            <FiAlertCircle className="w-4 h-4 shrink-0" />
+            <span>
+              {error instanceof Error
+                ? error.message
+                : "Failed to load evidence data."}
+            </span>
           </div>
         ) : isPresent ? (
-          <div className="space-y-6">
-            <section>
-              <p className="text-xs uppercase text-gray-500 mb-1">Title</p>
-              <p className="text-xl font-semibold">{claimData?.claim_title}</p>
-            </section>
-
-            <section>
-              <p className="text-xs uppercase text-gray-500 mb-1">Merged At</p>
-              <p
-                className={
-                  claimData?.pr_table.merged_at
-                    ? "text-green-400"
-                    : "text-yellow-500"
-                }
-              >
-                {claimData?.pr_table
-                  ? `${claimData?.pr_table?.merged_at ?? "Not Merged Yet"}`
-                  : "Not Merged Yet"}
-              </p>
-            </section>
-
-            <section>
-              <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">
-                Diff Stats
-              </p>
-              <div className="flex gap-6">
-                <span className="text-green-500">
-                  +{claimData?.pr_table.additions ?? 0} additions
-                </span>
-                <span className="text-red-500">
-                  −{claimData?.pr_table.deletions ?? 0} deletions
-                </span>
-              </div>
-            </section>
-
-            <section>
-              <p className="text-xs uppercase text-gray-500 mb-2">
-                Changes Files ({claimData?.pr_table.changed_files_count ?? 0})
-              </p>
-              {claimData?.pr_table.file_changes.length ? (
-                <ul>
-                  {claimData?.pr_table.file_changes.map((file, i) => (
-                    <li key={i} className=" text-gray-300">
-                      {file}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500 text-sm">No Files Recorded.</p>
-              )}
-            </section>
-
-            {claimData?.pr_table.issue_url && (
-              <section>
-                <p>Issue</p>
-                <a
-                  href={claimData?.pr_table.issue_url}
-                  target="_blank"
-                  className="text-blue-400 underline text-sm break-all"
-                >
-                  {claimData?.pr_table.issue_url}
-                </a>
-              </section>
-            )}
-          </div>
+          <EvidenceHeader claim={claimData} />
         ) : (
-          <h2>Claim Data unAvailable.</h2>
-        )}
-      </main>
-
-      <div className="w-full border border-gray-600" />
-
-      <section className="max-w-2xl mx-auto px-4 pt-4 pb-10">
-        <h2 className="text-yellow-300 text-3xl font-bold mb-8">
-          Supplymentary Evidence Section <span>{`(${countLink}/5)`}</span>
-        </h2>
-
-        <ul className="space-y-2 mb-4">
-          {supplymentaryLink.map((link, i) => (
-            <li
-              key={i}
-              className="flex items-center justify-between gap-3 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 group hover:border-zinc-500 transition-colors break-all"
-            >
-              🔗{link}
-            </li>
-          ))}
-        </ul>
-
-        {modal && countLink < 5 && (
-          <div className="flex flex-col gap-3 mb-3">
-            <label>Enter your Supplymentaru Link:🔗</label>
-            <input
-              ref={inputRef}
-              type="text"
-              className="bg-zinc-700 text-white p-1"
-              placeholder="Link...."
-              onChange={() => setSubmit(true)}
-            />
-            {submit && (
-              <ButtonComp
-                type="submit"
-                text="SAVE"
-                className="bg-blue-500 p-1 cursor-pointer"
-                onClick={() => addEvidence()}
-              />
-            )}
+          <div className="py-8 text-center text-[#8B949E] text-sm">
+            Claim data unavailable.
           </div>
         )}
 
-        <ButtonComp
-          className="w-full bg-zinc-800 p-2 rounded text-lg cursor-pointer hover:bg-zinc-600"
-          text={modal ? "✕" : "+"}
-          disabled={!modal && countLink >= 5}
-          onClick={() => {
-            setSubmit(false);
-            setModal(!modal);
-            if (inputRef.current) inputRef.current.value = "";
-          }}
-        />
-      </section>
+        {/* ── MAIN CONTENT ──────────────────────────── */}
+        {loading ? (
+          <>
+            {/* Skeleton: 2-col summary */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ContributionSummarySkeleton />
+              <VerificationSummarySkeleton />
+            </div>
+            <ChangedFilesSkeleton />
+            <SupportingEvidenceSkeleton />
+          </>
+        ) : isPresent ? (
+          <>
+            {/* ── SUMMARY ROW ─────────────────────── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ContributionSummary claim={claimData} />
+              <VerificationSummary claim={claimData} />
+            </div>
+
+            {/* ── CHANGED FILES ────────────────────── */}
+            <ChangedFiles
+              files={claimData.pr_table.file_changes ?? []}
+              count={
+                claimData.pr_table.changed_files_count ??
+                claimData.pr_table.file_changes?.length ??
+                0
+              }
+            />
+
+            {/* ── LINKED ISSUE ─────────────────────── */}
+            <LinkedIssue issueUrl={claimData.pr_table.issue_url} />
+
+            {/* ── SUPPORTING EVIDENCE ──────────────── */}
+            <SupportingEvidence
+              prTableId={claimData.pr_table.id}
+              initialLinks={claimData.pr_table.evidences ?? []}
+            />
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,8 @@
+"use client";
 import { addVerifier } from "@/app/actions/claims/addVerifier";
 import { ButtonComp } from "@/component/ui/button";
 import { useAuth } from "@/context/authContext";
+import { useTheme } from "@/context/themeContext";
 import { sendMail } from "@/lib/mailer/mailer";
 import { generateTokenFn } from "@/utils/dashboard/contributors/generateToken";
 import Image from "next/image";
@@ -21,13 +23,15 @@ export default function UserCard({
   icon?: React.ReactNode;
 }) {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleVerification = async (
     claimId: string,
     verifier_email: string,
   ) => {
     try {
-      console.log("STARTED MAIL");
       setIsSubmitting(true);
       const token = await generateTokenFn({
         claimId: claimId,
@@ -42,7 +46,7 @@ export default function UserCard({
         text: `Demo EMAIL BODY. Token:${token}`,
         html: `
         <h2>${user?.username} sent you a claim</h2>
-        <p>Please Verify it and increase thier Impact Score.</p>
+        <p>Please Verify it and increase their Impact Score.</p>
         <a href="http://localhost:3000/api/verifier/callback?token=${token}">Verify Claim</a>
           <p>BugHive Private Limited</p>`,
       });
@@ -54,7 +58,7 @@ export default function UserCard({
           token!,
         );
         if (data) {
-          toast.success(`EMAIL SEND`);
+          toast.success(`EMAIL SENT`);
           setIsSubmitting(false);
           shareModal();
         }
@@ -71,29 +75,39 @@ export default function UserCard({
     }
   };
 
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   return (
-    <div className="flex flex-row items-center px-2 gap-2 hover:border hover:border-zinc-500 py-2 justify-between">
+    <div
+      className={`flex flex-row items-center px-3 py-2 gap-2 rounded-lg transition-colors justify-between ${
+        isDark ? "hover:bg-[#161b22]" : "hover:bg-gray-100"
+      }`}
+    >
       {github_avatar_url ? (
         <Image
           src={github_avatar_url ?? "/profile.png"}
-          width={30}
-          height={30}
-          alt="github avttar url"
-          className="border rounded-full cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all"
+          width={28}
+          height={28}
+          alt="github avatar"
+          className="rounded-full cursor-pointer ring-1 ring-gray-300 dark:ring-zinc-700"
         />
       ) : (
-        <div className="w-7.5 h-7.5 rounded-full border bg-zinc-700 flex items-center justify-center text-xs text-zinc-300 shrink-0">
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${
+          isDark ? "bg-zinc-800 text-zinc-300" : "bg-gray-200 text-gray-700"
+        }`}>
           {icon}
         </div>
       )}
 
-      <p className="text-sm">{verifier_email}</p>
+      <p className="text-xs truncate flex-1 font-medium">{verifier_email}</p>
 
       <ButtonComp
         type="button"
         text={isSubmitting ? "Sending..." : "Send"}
-        className={`bg-zinc-900 p-2 rounded border border-zinc-700 hover:border-zinc-200 disabled:${isSubmitting} ${isSubmitting ? " opacity-55  cursor-not-allowed " : "border-zinc-700 hover:border-zinc-200 cursor-pointer "}`}
+        disabled={isSubmitting}
+        className={`px-3 py-1 text-xs font-semibold rounded transition-colors ${
+          isDark
+            ? "bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700"
+            : "bg-gray-900 hover:bg-gray-800 text-white"
+        } ${isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
         onClick={() => handleVerification(claimId, verifier_email)}
       />
     </div>
