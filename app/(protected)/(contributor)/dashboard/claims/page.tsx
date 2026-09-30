@@ -9,7 +9,8 @@ import { claimDB } from "@/types/dashboard/contributor/claimDB.types";
 import { ClaimCard } from "@/component/dashboard/claims/ClaimCard";
 
 export default function Claims() {
-  const [claimForm, setClaimForm] = useState<boolean>(false);
+  const [claimForm, setClaimForm] =
+    useState<boolean>(false);
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["claims"],
     queryFn: () => allClaim(),
@@ -43,17 +44,19 @@ export default function Claims() {
         </div>
       )}
 
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : claimForm ? (
-        <ClaimsForm onClose={() => setClaimForm(false)} />
-      ) : (
+      {/* FAB is always visible when not loading */}
+      {!isLoading && (
         <ButtonComp
           type="button"
           text="Add Claims"
           onClick={() => setClaimForm(true)}
           className="bg-green-800 p-3 z-10 border border-green-400 rounded-full fixed bottom-10 right-10 cursor-pointer hover:bg-green-900"
         />
+      )}
+
+      {/* Dialog renders in its own fixed overlay */}
+      {claimForm && (
+        <ClaimsForm onClose={() => setClaimForm(false)} />
       )}
     </div>
   );

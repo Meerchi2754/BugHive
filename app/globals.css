@@ -1,33 +1,122 @@
 @import url('https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double+Ink:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
-
-
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
 }
 
+html.dark,
+[data-theme="dark"] {
+  --background: #090B0D;
+  --foreground: #f3f4f6;
+}
+
+html.light,
+[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* --font-poppins: "Poppins", sans-serif; */
   --font-poppins: var(--font-poppins);
   --font-bitcount: "Bitcount Grid Single", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
-body {
-  /* background: var(--background); */
-  color: var(--foreground);
+/* ── Sleek Minimal BugHive Toast Styles ─────────────────── */
+.Toastify__toast-container--bottom-right {
+  bottom: 20px !important;
+  right: 20px !important;
+  padding: 0 !important;
+  width: auto !important;
+  max-width: 360px !important;
+}
+
+.Toastify__toast {
+  border-radius: 12px !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 10px 14px !important;
+  min-height: 42px !important;
+  margin-bottom: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: transform 0.15s ease, opacity 0.15s ease !important;
+}
+
+.Toastify__toast--light {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+.Toastify__toast--dark {
+  background: #111418 !important;
+  color: #f3f4f6 !important;
+  border: 1px solid #24282D !important;
+  box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.6), 0 2px 6px -1px rgba(0, 0, 0, 0.4) !important;
+}
+
+.Toastify__toast-body {
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+.Toastify__toast-icon {
+  width: 16px !important;
+  height: 16px !important;
+  margin-inline-end: 10px !important;
+  flex-shrink: 0 !important;
+}
+
+.Toastify__toast--success {
+  border-left: 3px solid #10b981 !important;
+}
+
+.Toastify__toast--error {
+  border-left: 3px solid #ef4444 !important;
+}
+
+.Toastify__toast--info {
+  border-left: 3px solid #3b82f6 !important;
+}
+
+.Toastify__toast--warning {
+  border-left: 3px solid #f59e0b !important;
+}
+
+.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #10b981 !important;
+}
+
+.Toastify__toast--error .Toastify__toast-icon svg {
+  fill: #ef4444 !important;
+}
+
+.Toastify__close-button {
+  color: currentColor !important;
+  opacity: 0.4 !important;
+  margin-left: 12px !important;
+  align-self: center !important;
+  transition: opacity 0.15s ease !important;
+}
+
+.Toastify__close-button:hover {
+  opacity: 0.9 !important;
 }
