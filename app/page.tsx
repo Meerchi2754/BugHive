@@ -43,7 +43,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="flex flex-row min-w-screen min-h-screen font-sans">
+    <main className="flex flex-row min-w-screen min-h-screen font-sans">
       {/* ── Left panel ── */}
       <motion.div
         className="relative flex flex-col justify-between flex-1 p-12 overflow-hidden"
@@ -202,6 +202,6 @@ export default function Home() {
           </motion.p>
         </motion.div>
       </div>
-    </div>
+    </main>
   );
 }
