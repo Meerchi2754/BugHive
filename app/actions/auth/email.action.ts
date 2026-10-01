@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { EmailSchemaType } from "@/lib/validations/emailLogin";
 import { findMaintainer } from "@/services/auth/findMaintainer";
+import { getURL } from "@/utils/getURL";
 
 export const EmailAction = async (Emaildata: EmailSchemaType, role: string) => {
   const supabase = await createClient();
@@ -15,14 +16,17 @@ export const EmailAction = async (Emaildata: EmailSchemaType, role: string) => {
   //   return { data: data2, method: "login" };
   // }
 
+  const baseUrl = getURL();
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: "http://localhost:3000/api/auth/email/callback",
+      emailRedirectTo: `${baseUrl}/api/auth/email/callback`,
     },
   });
   // console.log("EMAIL:", data);
   console.log("EMAIL ERROR", error);
   return { data: data, method: "login" };
 };
+

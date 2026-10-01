@@ -10,14 +10,14 @@ export async function GET(req: NextRequest) {
 
     if (!token) {
       console.log("No TOKEN");
-      return NextResponse.redirect("/noAccess");
+      return NextResponse.redirect(new URL("/noAccess", req.url));
     }
     const data = await jwtVerify(token);
     console.log("DATA:", data);
     // If the Contributor and Verifier are same.
     if (data.contributor_email === data.verifier_email) {
       console.log("SAME VERIFIER AND CONTRIBUTOR");
-      return NextResponse.redirect("http://localhost:3000/noAccess");
+      return NextResponse.redirect(new URL("/noAccess", req.url));
     }
 
     const current_Date = new Date().toLocaleDateString("en-US");
@@ -26,20 +26,20 @@ export async function GET(req: NextRequest) {
 
     if (current_year > sended_year) {
       console.log("LINK EXPIRED YEAR");
-      return NextResponse.redirect("http://localhost:3000/noAccess");
+      return NextResponse.redirect(new URL("/noAccess", req.url));
     } else if (current_year === sended_year && current_month > sended_month) {
       console.log(current_Date);
       console.log(data.sended_at);
       console.log("LINK EXPIRED MONTH");
 
-      return NextResponse.redirect("http://localhost:3000/noAccess");
+      return NextResponse.redirect(new URL("/noAccess", req.url));
     } else if (
       current_year === sended_year &&
       current_month === sended_month &&
       current_date >= sended_date + 7
     ) {
       console.log("LINK EXPIRED DATE");
-      return NextResponse.redirect("http://localhost:3000/noAccess");
+      return NextResponse.redirect(new URL("/noAccess", req.url));
     }
 
     const { data: activeSession, error: errorActiveSession } =
@@ -52,7 +52,10 @@ export async function GET(req: NextRequest) {
     console.log("SESSION:", activeSession);
     if (activeSession) {
       return NextResponse.redirect(
-        `http://localhost:3000/register?role=VERIFIER&token?=${token}&action=redirect`,
+        new URL(
+          `/register?role=VERIFIER&token=${token}&action=redirect`,
+          req.url,
+        ),
       );
     }
 

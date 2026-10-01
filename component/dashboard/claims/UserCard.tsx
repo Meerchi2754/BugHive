@@ -5,6 +5,7 @@ import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { sendMail } from "@/lib/mailer/mailer";
 import { generateTokenFn } from "@/utils/dashboard/contributors/generateToken";
+import { getURL } from "@/utils/getURL";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -33,6 +34,7 @@ export default function UserCard({
   ) => {
     try {
       setIsSubmitting(true);
+      const baseUrl = getURL();
       const token = await generateTokenFn({
         claimId: claimId,
         contributor_email: user?.email!,
@@ -47,7 +49,7 @@ export default function UserCard({
         html: `
         <h2>${user?.username} sent you a claim</h2>
         <p>Please Verify it and increase their Impact Score.</p>
-        <a href="http://localhost:3000/api/verifier/callback?token=${token}">Verify Claim</a>
+        <a href="${baseUrl}/api/verifier/callback?token=${token}">Verify Claim</a>
           <p>BugHive Private Limited</p>`,
       });
       if (response?.messageId) {

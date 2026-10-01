@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
+import { getURL } from "@/utils/getURL";
+
 type OAuthProvider = "github" | "google";
 
 export async function oAuth(
@@ -8,11 +10,12 @@ export async function oAuth(
   token?: string | null,
 ) {
   const supabase = createClient();
+  const baseUrl = getURL();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: providerAuth,
     options: {
-      redirectTo: `http://localhost:3000/api/auth/oAuth/callback?role=${role}&action=${action}&token=${token}`,
+      redirectTo: `${baseUrl}/api/auth/oAuth/callback?role=${role}&action=${action}${token ? `&token=${token}` : ""}`,
       scopes:
         providerAuth === "github"
           ? "read:user user:email repo"
@@ -25,3 +28,4 @@ export async function oAuth(
   }
   console.log("AUTH", data);
 }
+
