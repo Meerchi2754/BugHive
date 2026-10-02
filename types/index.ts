@@ -31,6 +31,7 @@ export type UserDB = {
   updated_at: string;
   ivkey: string;
   github_access_token: string;
+  banner_url?: string | null;
 };
 
 export type Role = "ADMIN" | "CONTRIBUTOR" | "VERIFIER" | "MAINTAINER" | null;
@@ -42,6 +43,7 @@ export type AuthContextType = {
   setRole: React.Dispatch<React.SetStateAction<Role | null>>;
   isLoading: boolean;
   refreshUser: () => Promise<void>;
+  logout: () => Promise<void>;
 };
 
 export type OAuthProvider = "github" | "google";

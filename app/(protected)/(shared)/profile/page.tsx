@@ -6,11 +6,23 @@ import { useAuth } from "@/context/authContext";
 import { useTheme } from "@/context/themeContext";
 import { claimVisibilityType } from "@/lib/validations/claims";
 import { updateUser } from "@/services/profile/updateUser";
+import { uploadBanner, deleteBanner } from "@/services/profile/uploadBanner";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaGithub } from "react-icons/fa";
-import { FiUser, FiFileText, FiTag, FiMail, FiEdit2, FiTrash2, FiImage } from "react-icons/fi";
+import {
+  FiUser,
+  FiFileText,
+  FiTag,
+  FiMail,
+  FiEdit2,
+  FiTrash2,
+  FiImage,
+  FiCamera,
+  FiUploadCloud,
+} from "react-icons/fi";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { VscAccount } from "react-icons/vsc";
 import { toast } from "react-toastify";
 
@@ -22,11 +34,23 @@ export default function Profile() {
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const headlineRef = useRef<HTMLInputElement>(null);
   const bioRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState<boolean>(false);
   const [accountMode, setAccountMode] = useState<claimVisibilityType>(
     user?.account_mode!,
   );
-  const [bannerUrl, setBannerUrl] = useState<string | null>("/cover.png");
+  const [bannerUrl, setBannerUrl] = useState<string | null>(
+    user?.banner_url || "/default_cover.webp",
+  );
+
+  useEffect(() => {
+    if (user?.banner_url) {
+      setBannerUrl(user.banner_url);
+    } else {
+      setBannerUrl("/default_cover.webp");
+    }
+  }, [user?.banner_url]);
 
   const updatedUser = async () => {
     setIsSubmitting(true);
@@ -45,15 +69,50 @@ export default function Profile() {
     toast.success("Update Successful");
   };
 
-  const handleDeleteBanner = () => {
-    setBannerUrl(null);
-    toast.success("Banner photo removed");
+  const handleTriggerUpload = () => {
+    fileInputRef.current?.click();
   };
 
-  const handleRestoreBanner = () => {
-    setBannerUrl("/cover.png");
-    toast.success("Banner photo restored");
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    try {
+      setIsUploadingBanner(true);
+      const publicUrl = await uploadBanner(file, user.id);
+      if (publicUrl) {
+        setBannerUrl(publicUrl);
+        toast.success("Banner photo updated successfully!");
+        refreshUser();
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to upload banner.";
+      console.error("Banner upload error:", err);
+      toast.error(message);
+    } finally {
+      setIsUploadingBanner(false);
+      if (e.target) e.target.value = "";
+    }
   };
+
+  const handleDeleteBanner = async () => {
+    if (!user?.id) return;
+    try {
+      setIsUploadingBanner(true);
+      await deleteBanner(user.id);
+      setBannerUrl("/default_cover.webp");
+      toast.success("Banner photo removed");
+      refreshUser();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to remove banner";
+      console.error("Delete banner error:", err);
+      toast.error(message);
+    } finally {
+      setIsUploadingBanner(false);
+    }
+  };
+
+  const hasCustomBanner = Boolean(user?.banner_url && user.banner_url !== "/default_cover.webp");
 
   const toggleUserVisibility = () => {
     setAccountMode((prev) => (prev === "PUBLIC" ? "PRIVATE" : "PUBLIC"));
@@ -71,7 +130,16 @@ export default function Profile() {
         color: isDark ? "#F3F4F6" : "#111827",
       }}
     >
-      <div className="max-w-4xl mx-auto space-y-6">
+      {/* Hidden File Input for Banner Upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        className="hidden"
+      />
+
+      <div className="w-full space-y-6">
         <div>
           <h2 className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
             My Profile
@@ -91,7 +159,7 @@ export default function Profile() {
         >
           {/* Banner Container */}
           <div
-            className={`relative w-full h-44 sm:h-52 md:h-64 select-none overflow-visible ${
+            className={`relative w-full h-36 sm:h-44 md:h-52 lg:h-60 select-none overflow-visible ${
               !bannerUrl
                 ? isDark
                   ? "bg-gradient-to-r from-zinc-800 via-zinc-900 to-black"
@@ -99,7 +167,7 @@ export default function Profile() {
                 : ""
             }`}
           >
-            {bannerUrl ? (
+            {bannerUrl && (
               <Image
                 src={bannerUrl}
                 alt="Profile cover banner"
@@ -107,30 +175,41 @@ export default function Profile() {
                 priority
                 className="object-cover object-center"
               />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs font-medium text-gray-400">
-                <button
-                  type="button"
-                  onClick={handleRestoreBanner}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/80 dark:bg-zinc-800/80 hover:bg-white dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-200 shadow-sm border border-gray-300 dark:border-zinc-600 transition-all cursor-pointer"
-                >
-                  <FiImage size={15} />
-                  Restore Banner Photo
-                </button>
+            )}
+
+            {/* Banner Loading Overlay */}
+            {isUploadingBanner && (
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2 z-40 text-white">
+                <AiOutlineLoading3Quarters size={32} className="animate-spin text-emerald-400" />
+                <p className="text-sm font-medium">Updating banner...</p>
               </div>
             )}
 
-            {/* Top-Right Banner Delete Button */}
-            {bannerUrl && (
+            {/* Top-Right Quick Action Buttons on Banner */}
+            <div className="absolute top-3.5 right-3.5 flex items-center gap-2 z-10">
               <button
                 type="button"
-                onClick={handleDeleteBanner}
-                title="Delete Banner Photo"
-                className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-red-500 shadow-md flex items-center justify-center cursor-pointer transition-all hover:scale-105 z-20 border border-gray-200/80"
+                onClick={handleTriggerUpload}
+                disabled={isUploadingBanner}
+                title="Upload/Change Banner Photo"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/80 text-white backdrop-blur-md shadow-lg border border-white/20 transition-all hover:scale-105 cursor-pointer text-xs font-medium disabled:opacity-50"
               >
-                <FiTrash2 size={15} />
+                <FiCamera size={14} />
+                <span>{hasCustomBanner ? "Change Cover" : "Upload Cover"}</span>
               </button>
-            )}
+
+              {hasCustomBanner && (
+                <button
+                  type="button"
+                  onClick={handleDeleteBanner}
+                  disabled={isUploadingBanner}
+                  title="Remove Custom Banner"
+                  className="w-8 h-8 rounded-xl bg-black/60 hover:bg-red-500/80 text-white backdrop-blur-md shadow-lg flex items-center justify-center cursor-pointer transition-all hover:scale-105 border border-white/20 disabled:opacity-50"
+                >
+                  <FiTrash2 size={14} />
+                </button>
+              )}
+            </div>
 
             {/* Circular Profile Avatar Overlapping Bottom of Banner */}
             <div className="absolute -bottom-12 sm:-bottom-14 left-6 sm:left-10 z-30">
@@ -147,26 +226,39 @@ export default function Profile() {
           </div>
 
           {/* Banner Bottom Action Bar */}
-          <div className="flex justify-end items-center px-6 sm:px-10 pt-3 pb-3 gap-3">
-            {bannerUrl && (
+          <div className="flex justify-end items-center px-6 sm:px-10 pt-3 pb-3 gap-2">
+            <button
+              type="button"
+              onClick={handleTriggerUpload}
+              disabled={isUploadingBanner}
+              className="text-gray-600 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 text-xs font-medium"
+              title="Upload New Banner"
+            >
+              <FiUploadCloud size={16} />
+              <span className="hidden sm:inline">Upload Banner</span>
+            </button>
+
+            {hasCustomBanner && (
               <button
                 type="button"
                 onClick={handleDeleteBanner}
-                className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-1 text-xs font-medium"
-                title="Delete Banner"
+                disabled={isUploadingBanner}
+                className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-1.5 text-xs font-medium"
+                title="Reset to Default Banner"
               >
-                <FiTrash2 size={16} />
-                <span className="hidden sm:inline">Delete Banner</span>
+                <FiTrash2 size={15} />
+                <span className="hidden sm:inline">Reset to Default</span>
               </button>
             )}
+
             <button
               type="button"
               onClick={() => setIsEdit((prev) => !prev)}
-              className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center gap-1 text-xs font-medium"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 text-xs font-medium"
               title="Edit Profile"
             >
-              <FiEdit2 size={16} />
-              <span className="hidden sm:inline">Edit</span>
+              <FiEdit2 size={15} />
+              <span className="hidden sm:inline">Edit Profile</span>
             </button>
           </div>
 

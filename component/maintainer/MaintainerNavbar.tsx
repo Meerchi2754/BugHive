@@ -6,12 +6,14 @@ import Image from "next/image";
 import { useState } from "react";
 import { IoIosNotifications } from "react-icons/io";
 
+import ProfileDropdown from "@/component/common/ProfileDropdown";
+
 export default function MaintainerNavbar() {
   const [hasNotification, setHasNotification] = useState<boolean>(false);
   const { user, role } = useAuth();
   const [impactScore, setImpactScore] = useState<number>(0);
   return (
-    <motion.div className="bg-white z-19 h-16 flex flex-row justify-between items-center border-b border-black">
+    <motion.div className="bg-white relative z-50 h-16 flex flex-row justify-between items-center border-b border-gray-200">
       <div>
         <h1 className="text-blue-500 text-4xl px-5 font-bitcount">
           Bug
@@ -28,14 +30,8 @@ export default function MaintainerNavbar() {
         </h2>
       </div>
 
-      <div className="flex flex-row px-4 gap-4 font-poppins text-sm">
-        <Image
-          src={user?.github_avatar_url ?? "/profile.png"}
-          width={40}
-          height={40}
-          alt="Profile photo"
-          className="border-2 border-cyan-950 rounded-full cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all"
-        />
+      <div className="flex flex-row items-center px-4 gap-4 font-poppins text-sm">
+        <ProfileDropdown avatarSize={36} />
       </div>
     </motion.div>
   );

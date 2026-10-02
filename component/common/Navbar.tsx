@@ -9,6 +9,8 @@ import { MdNotificationsActive } from "react-icons/md";
 import { CiLight } from "react-icons/ci";
 import { LuMoon } from "react-icons/lu";
 
+import ProfileDropdown from "@/component/common/ProfileDropdown";
+
 export default function Navbar() {
   const [hasNotification, setHasNotification] = useState<boolean>(false);
   const { user } = useAuth();
@@ -18,7 +20,7 @@ export default function Navbar() {
 
   return (
     <motion.div
-      className="z-20 h-16 flex flex-row justify-between items-center transition-colors duration-150"
+      className="relative z-50 h-16 flex flex-row justify-between items-center transition-colors duration-150"
       style={{
         backgroundColor: isDark ? "#090B0D" : "#ffffff",
         borderBottom: `1px solid ${isDark ? "#1f2328" : "#e5e7eb"}`,
@@ -49,7 +51,7 @@ export default function Navbar() {
         </h2>
       </div>
 
-      {/* Right — theme toggle + notifications + avatar */}
+      {/* Right — theme toggle + notifications + avatar dropdown */}
       <div className="flex flex-row items-center px-4 gap-2">
         {/* Theme toggle */}
         <button
@@ -89,16 +91,10 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Avatar */}
-        <Image
-          src={user?.github_avatar_url ?? "/profile.png"}
-          width={32}
-          height={32}
-          alt="Profile photo"
-          className={`rounded-full cursor-pointer ring-1 transition-all duration-150 ml-1 hover:ring-2 hover:ring-emerald-500 ${
-            isDark ? "ring-[#24282D]" : "ring-gray-300"
-          }`}
-        />
+        {/* Profile Dropdown */}
+        <div className="ml-1">
+          <ProfileDropdown avatarSize={32} />
+        </div>
       </div>
     </motion.div>
   );

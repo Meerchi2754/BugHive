@@ -23,7 +23,7 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://bughive.dev";
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://bug-hive.meetrajparmar.in";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

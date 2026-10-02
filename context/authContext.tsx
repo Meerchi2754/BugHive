@@ -3,6 +3,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { AuthContextType, UserDB, Role } from "../types/index";
 import { createClient } from "@/lib/supabase/client";
 
+import { logoutAction } from "@/app/actions/auth/logout.action";
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -39,6 +41,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      await logoutAction();
+      setUser(null);
+      setRole(null);
+    } catch (err) {
+      console.error("Logout error in context:", err);
+    }
+  };
+
   useEffect(() => {
     const getUser = async () => {
       setIsLoading(true);
@@ -56,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ role, user, setRole, setUser, isLoading, refreshUser }}
+      value={{ role, user, setRole, setUser, isLoading, refreshUser, logout }}
     >
       {children}
     </AuthContext.Provider>
