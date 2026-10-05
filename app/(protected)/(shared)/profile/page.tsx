@@ -125,9 +125,9 @@ export default function Profile() {
   const toggleUserVisibility = () => {
     setAccountMode((prev) => (prev === "PUBLIC" ? "PRIVATE" : "PUBLIC"));
   };
-  console.log("CUSTOMER BANNER:", hasCustomBanner);
-  console.log("USER:", user);
-  console.log("BANNER URL:", bannerUrl);
+  // console.log("CUSTOMER BANNER:", hasCustomBanner);
+  // console.log("USER:", user);
+  // console.log("BANNER URL:", bannerUrl);
   return (
     <div
       className="min-h-screen p-4 sm:p-6 md:p-8 transition-colors duration-150"
