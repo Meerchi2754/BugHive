@@ -44,6 +44,14 @@ export default function Profile() {
     user?.banner_url || "/default_cover.webp",
   );
 
+  const [avatarSrc, setAvatarSrc] = useState<string>(
+    user?.github_avatar_url || "/profile.png",
+  );
+
+  useEffect(() => {
+    setAvatarSrc(user?.github_avatar_url || "/profile.png");
+  }, [user?.github_avatar_url]);
+
   useEffect(() => {
     if (user?.banner_url) {
       setBannerUrl(user.banner_url);
@@ -173,6 +181,7 @@ export default function Profile() {
                 alt="Profile cover banner"
                 fill
                 priority
+                onError={() => setBannerUrl("/default_cover.webp")}
                 className="object-cover object-center"
               />
             )}
@@ -215,10 +224,11 @@ export default function Profile() {
             <div className="absolute -bottom-12 sm:-bottom-14 left-6 sm:left-10 z-30">
               <div className="relative">
                 <Image
-                  src={user?.github_avatar_url ?? "/profile.png"}
+                  src={avatarSrc}
                   width={140}
                   height={140}
                   alt="Profile photo"
+                  onError={() => setAvatarSrc("/profile.png")}
                   className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-[#0D1013] shadow-xl object-cover bg-white cursor-pointer hover:ring-2 hover:ring-amber-400 transition-all"
                 />
               </div>

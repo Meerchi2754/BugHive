@@ -76,7 +76,14 @@ export default function ProfileDropdown({ avatarSize = 36 }: ProfileDropdownProp
     }
   };
 
-  const avatarUrl = user?.github_avatar_url ?? "/profile.png";
+  const [avatarSrc, setAvatarSrc] = useState<string>(
+    user?.github_avatar_url || "/profile.png",
+  );
+
+  useEffect(() => {
+    setAvatarSrc(user?.github_avatar_url || "/profile.png");
+  }, [user?.github_avatar_url]);
+
   const displayName = user?.username ?? user?.github_username ?? "User";
   const displayRole = (role ?? user?.role ?? "MEMBER").toUpperCase();
 
@@ -97,10 +104,11 @@ export default function ProfileDropdown({ avatarSize = 36 }: ProfileDropdownProp
         } ${isDark ? "ring-[#24282D]" : "ring-gray-300"}`}
       >
         <Image
-          src={avatarUrl}
+          src={avatarSrc}
           width={avatarSize}
           height={avatarSize}
           alt={`${displayName}'s profile photo`}
+          onError={() => setAvatarSrc("/profile.png")}
           className="rounded-full object-cover bg-[#161B22]"
           style={{ width: `${avatarSize}px`, height: `${avatarSize}px` }}
         />
@@ -132,10 +140,11 @@ export default function ProfileDropdown({ avatarSize = 36 }: ProfileDropdownProp
             >
               <div className="flex items-center gap-3">
                 <Image
-                  src={avatarUrl}
+                  src={avatarSrc}
                   width={42}
                   height={42}
                   alt={displayName}
+                  onError={() => setAvatarSrc("/profile.png")}
                   className="rounded-full object-cover border border-emerald-500/30 bg-zinc-800"
                 />
                 <div className="flex-1 min-w-0">
