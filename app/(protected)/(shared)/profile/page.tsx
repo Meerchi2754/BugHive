@@ -125,7 +125,9 @@ export default function Profile() {
   const toggleUserVisibility = () => {
     setAccountMode((prev) => (prev === "PUBLIC" ? "PRIVATE" : "PUBLIC"));
   };
-
+  console.log("CUSTOMER BANNER:", hasCustomBanner);
+  console.log("USER:", user);
+  console.log("BANNER URL:", bannerUrl);
   return (
     <div
       className="min-h-screen p-4 sm:p-6 md:p-8 transition-colors duration-150"
@@ -181,7 +183,11 @@ export default function Profile() {
                 alt="Profile cover banner"
                 fill
                 priority
-                onError={() => setBannerUrl("/default_cover.webp")}
+                unoptimized={Boolean(bannerUrl && bannerUrl.startsWith("http"))}
+                onError={() => {
+                  console.error("Banner failed to load, falling back to default");
+                  setBannerUrl("/default_cover.webp");
+                }}
                 className="object-cover object-center"
               />
             )}
@@ -228,6 +234,7 @@ export default function Profile() {
                   width={140}
                   height={140}
                   alt="Profile photo"
+                  unoptimized={Boolean(avatarSrc && avatarSrc.startsWith("http"))}
                   onError={() => setAvatarSrc("/profile.png")}
                   className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-[#0D1013] shadow-xl object-cover bg-white cursor-pointer hover:ring-2 hover:ring-amber-400 transition-all"
                 />

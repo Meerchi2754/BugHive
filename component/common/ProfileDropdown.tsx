@@ -79,7 +79,7 @@ export default function ProfileDropdown({ avatarSize = 36 }: ProfileDropdownProp
   const [avatarSrc, setAvatarSrc] = useState<string>(
     user?.github_avatar_url || "/profile.png",
   );
-
+  console.log("GITHUB AVAATAR:", user?.github_avatar_url);
   useEffect(() => {
     setAvatarSrc(user?.github_avatar_url || "/profile.png");
   }, [user?.github_avatar_url]);
