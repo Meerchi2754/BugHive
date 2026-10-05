@@ -10,13 +10,13 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "dark",
+  theme: "light",
   toggleTheme: () => {},
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
 
   const applyTheme = (t: Theme) => {
     const root = document.documentElement;
@@ -32,10 +32,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // On mount, read saved preference or default to dark
+  // On mount, read saved preference or default to light
   useEffect(() => {
     const saved = localStorage.getItem("bughive-theme") as Theme | null;
-    const resolved: Theme = saved ?? "dark";
+    const resolved: Theme = saved ?? "light";
     setThemeState(resolved);
     applyTheme(resolved);
   }, []);

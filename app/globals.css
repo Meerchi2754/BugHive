@@ -3,6 +3,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
@@ -27,6 +29,10 @@ html.light,
   --font-mono: var(--font-geist-mono);
   --font-poppins: var(--font-poppins);
   --font-bitcount: "Bitcount Grid Single", sans-serif;
+}
+
+.font-bitcount {
+  font-family: 'Bitcount Grid Single', sans-serif;
 }
 
 body {

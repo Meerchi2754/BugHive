@@ -227,30 +227,7 @@ export default function Profile() {
 
           {/* Banner Bottom Action Bar */}
           <div className="flex justify-end items-center px-6 sm:px-10 pt-3 pb-3 gap-2">
-            <button
-              type="button"
-              onClick={handleTriggerUpload}
-              disabled={isUploadingBanner}
-              className="text-gray-600 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 flex items-center gap-1.5 text-xs font-medium"
-              title="Upload New Banner"
-            >
-              <FiUploadCloud size={16} />
-              <span className="hidden sm:inline">Upload Banner</span>
-            </button>
-
-            {hasCustomBanner && (
-              <button
-                type="button"
-                onClick={handleDeleteBanner}
-                disabled={isUploadingBanner}
-                className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors cursor-pointer p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-1.5 text-xs font-medium"
-                title="Reset to Default Banner"
-              >
-                <FiTrash2 size={15} />
-                <span className="hidden sm:inline">Reset to Default</span>
-              </button>
-            )}
-
+        
             <button
               type="button"
               onClick={() => setIsEdit((prev) => !prev)}
@@ -261,7 +238,7 @@ export default function Profile() {
               <span className="hidden sm:inline">Edit Profile</span>
             </button>
           </div>
-
+              
           {/* Profile Content Body */}
           <div className="pt-8 sm:pt-10 px-6 sm:px-10 pb-8 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

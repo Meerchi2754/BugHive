@@ -1,10 +1,9 @@
 "use client";
 
 import { oAuth } from "@/app/actions/action";
-import { FaGithub } from "react-icons/fa";
+import { FaGithub, FaCodeBranch, FaCheckCircle, FaBriefcase, FaArrowLeft } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { redirect, useSearchParams } from "next/navigation";
-import { ButtonComp } from "@/component/ui/button";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -15,6 +14,7 @@ import { EmailAction } from "@/app/actions/auth/email.action";
 import { Suspense, useState } from "react";
 import { toast } from "react-toastify";
 import { motion, Variants } from "framer-motion";
+import Link from "next/link";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -26,9 +26,11 @@ const itemVariants: Variants = {
 };
 
 function SignUpForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token?");
-  const role = searchParams.get("role");
+  const token = searchParams.get("token") || searchParams.get("token?");
+  const rawRole = searchParams.get("role");
+  const role = rawRole?.toUpperCase() || "CONTRIBUTOR";
   const action = searchParams.get("action") || "register";
   const isMaintainer = role === "MAINTAINER";
   const isVerifier = role === "VERIFIER";
@@ -46,11 +48,12 @@ function SignUpForm() {
   const onSubmit = async (data: EmailSchemaType) => {
     try {
       setIsSubmitting(true);
-      const result = await EmailAction(data, role || "MAINTAINER");
+      const result = await EmailAction(data, role);
       if (result) {
         if (result.method === "login") {
           toast.success("Login successful!");
-          redirect("/onboarding/maintiner");
+          router.push("/onboarding/maintainer");
+          return;
         }
       }
       toast.success("Verification email sent.");
@@ -67,185 +70,161 @@ function SignUpForm() {
     }
   };
 
-  const heading = isVerifier
-    ? "Create your verifier account"
-    : "Sign into your account";
+  const getRoleDetails = () => {
+    if (isVerifier) {
+      return {
+        badge: "Verifier Workspace",
+        icon: <FaCheckCircle className="text-blue-600" size={13} />,
+        heading: "Sign in as Verifier",
+        subheading: "Audit contributions and review live PR engineering rubrics",
+      };
+    }
+    if (isMaintainer) {
+      return {
+        badge: "Maintainer Portal",
+        icon: <FaBriefcase className="text-blue-600" size={13} />,
+        heading: "Maintainer Account",
+        subheading: "Manage repositories and discover evaluated developer talent",
+      };
+    }
+    return {
+      badge: "Contributor Workspace",
+      icon: <FaCodeBranch className="text-blue-600" size={13} />,
+      heading: "Sign in as Contributor",
+      subheading: "Connect your GitHub to import PRs and build your verified portfolio",
+    };
+  };
 
-  const subheading = isVerifier
-    ? "Submit verifications and review contributions"
-    : isMaintainer
-    ? "Manage your projects and review talent"
-    : "Access your contributor dashboard";
+  const roleInfo = getRoleDetails();
 
   return (
     <motion.div
-      className="w-full max-w-sm"
+      className="w-full max-w-md"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* Heading */}
+      {/* Back to role picker */}
+      <motion.div variants={itemVariants} className="mb-6">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-500 hover:text-blue-600 transition-colors group"
+        >
+          <FaArrowLeft size={10} className="transition-transform group-hover:-translate-x-1" />
+          <span>Change workspace role</span>
+        </Link>
+      </motion.div>
+
+      {/* Role Badge and Heading */}
       <motion.div variants={itemVariants} className="mb-8">
-        <p
-          style={{
-            color: "#64748b",
-            fontSize: "0.8rem",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            marginBottom: "6px",
-          }}
-        >
-          {role?.toLowerCase() ?? "sign in"}
-        </p>
-        <h2
-          style={{
-            color: "#0f172a",
-            fontWeight: 700,
-            fontSize: "1.75rem",
-            lineHeight: 1.25,
-          }}
-        >
-          {heading}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold uppercase tracking-wider mb-3">
+          {roleInfo.icon}
+          <span>{roleInfo.badge}</span>
+        </div>
+        <h2 className="text-2xl lg:text-3xl font-bold text-zinc-900 tracking-tight">
+          {roleInfo.heading}
         </h2>
-        <p style={{ color: "#94a3b8", fontSize: "0.85rem", marginTop: "6px" }}>
-          {subheading}
+        <p className="text-zinc-500 text-sm mt-1.5 leading-relaxed">
+          {roleInfo.subheading}
         </p>
       </motion.div>
 
       {isMaintainer ? (
-        /* ── Email / password form for Maintainers ── */
+        /* ── Email / Password form for Maintainers ── */
         <motion.form
           variants={itemVariants}
           onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-4.5"
         >
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="email"
-              style={{ color: "#374151", fontSize: "0.85rem", fontWeight: 500 }}
+              className="text-xs font-semibold text-zinc-700 tracking-wide uppercase"
             >
-              Email address
+              Work Email Address
             </label>
             <input
               id="email"
-              type="text"
-              placeholder="you@example.com"
+              type="email"
+              placeholder="maintainer@organization.com"
               {...register("email")}
-              className="bg-white border-[1.5px] border-[#e2e8f0] focus:border-[#60a5fa] rounded-[10px] px-[14px] py-[10px] text-[0.9rem] text-[#0f172a] outline-none transition-colors duration-200"
+              className="w-full bg-white border border-zinc-200 hover:border-zinc-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-sm text-zinc-900 outline-none transition-all placeholder:text-zinc-400 shadow-xs"
             />
             {errors.email && (
-              <p style={{ color: "#ef4444", fontSize: "0.78rem" }}>
-                {errors.email.message}
-              </p>
+              <p className="text-red-500 text-xs mt-0.5">{errors.email.message}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="password"
-              style={{ color: "#374151", fontSize: "0.85rem", fontWeight: 500 }}
+              className="text-xs font-semibold text-zinc-700 tracking-wide uppercase"
             >
               Password
             </label>
             <input
               id="password"
               type="password"
-              placeholder="••••••••"
+              placeholder="••••••••••••"
               {...register("password")}
-              className="bg-white border-[1.5px] border-[#e2e8f0] focus:border-[#60a5fa] rounded-[10px] px-[14px] py-[10px] text-[0.9rem] text-[#0f172a] outline-none transition-colors duration-200"
+              className="w-full bg-white border border-zinc-200 hover:border-zinc-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl px-4 py-3 text-sm text-zinc-900 outline-none transition-all placeholder:text-zinc-400 shadow-xs"
             />
             {errors.password && (
-              <p style={{ color: "#ef4444", fontSize: "0.78rem" }}>
-                {errors.password.message}
-              </p>
+              <p className="text-red-500 text-xs mt-0.5">{errors.password.message}</p>
             )}
           </div>
 
           {errors.root && (
-            <p style={{ color: "#ef4444", fontSize: "0.8rem" }}>
-              {errors.root.message}
-            </p>
+            <p className="text-red-500 text-xs">{errors.root.message}</p>
           )}
 
           <button
             id="submit-btn"
             type="submit"
             disabled={isSubmitting}
-            style={{
-              marginTop: "4px",
-              background: isSubmitting ? "#93c5fd" : "#3b82f6",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "10px",
-              padding: "12px",
-              fontSize: "0.92rem",
-              fontWeight: 600,
-              cursor: isSubmitting ? "not-allowed" : "pointer",
-              transition: "background 0.2s",
-            }}
+            className="w-full mt-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
           >
-            {isSubmitting ? "Signing in…" : "Continue"}
+            {isSubmitting ? "Authenticating…" : "Continue with Email →"}
           </button>
         </motion.form>
       ) : (
         /* ── OAuth buttons for Contributors & Verifiers ── */
-        <motion.div variants={itemVariants} className="flex flex-col gap-3">
-          <ButtonComp
+        <motion.div variants={itemVariants} className="flex flex-col gap-3.5">
+          <button
+            type="button"
             id="github-btn"
-            className="flex items-center justify-center gap-3 w-full cursor-pointer"
-            style={{
-              background: "#ffffff",
-              border: "1.5px solid #e2e8f0",
-              borderRadius: "12px",
-              padding: "13px 20px",
-              color: "#0f172a",
-              fontSize: "0.92rem",
-              fontWeight: 500,
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-              transition: "border-color 0.2s, box-shadow 0.2s",
-            }}
-            icon={<FaGithub size={20} />}
-            onClick={() => role && oAuth("github", role!, action, token)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.15 }}
-            text="Continue with GitHub"
-          />
+            onClick={() => oAuth("github", role, action, token)}
+            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl bg-zinc-900 hover:bg-black text-white font-semibold text-sm shadow-md shadow-zinc-900/10 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+          >
+            <FaGithub size={18} className="transition-transform group-hover:scale-110" />
+            <span>Continue with GitHub</span>
+          </button>
 
-          <ButtonComp
+          <button
+            type="button"
             id="google-btn"
-            className="flex items-center justify-center gap-3 w-full cursor-pointer"
-            style={{
-              background: "#ffffff",
-              border: "1.5px solid #e2e8f0",
-              borderRadius: "12px",
-              padding: "13px 20px",
-              color: "#0f172a",
-              fontSize: "0.92rem",
-              fontWeight: 500,
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-              transition: "border-color 0.2s, box-shadow 0.2s",
-            }}
-            icon={<FcGoogle size={20} />}
-            onClick={() => role && oAuth("google", role!, action, token)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.15 }}
-            text="Continue with Google"
-          />
+            onClick={() => oAuth("google", role, action, token)}
+            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-50 border border-zinc-200 hover:border-zinc-300 text-zinc-800 font-semibold text-sm shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+          >
+            <FcGoogle size={18} className="transition-transform group-hover:scale-110" />
+            <span>Continue with Google</span>
+          </button>
         </motion.div>
       )}
 
+      {/* Terms & Privacy */}
       <motion.p
         variants={itemVariants}
-        style={{
-          color: "#94a3b8",
-          fontSize: "0.78rem",
-          textAlign: "center",
-          marginTop: "28px",
-        }}
+        className="text-zinc-400 text-xs text-center mt-8"
       >
-        By continuing you agree to our Terms &amp; Privacy Policy
+        By continuing, you agree to BugHive&apos;s{" "}
+        <Link href="/" className="text-zinc-600 hover:text-blue-600 hover:underline">
+          Terms of Service
+        </Link>{" "}
+        &amp;{" "}
+        <Link href="/" className="text-zinc-600 hover:text-blue-600 hover:underline">
+          Privacy Policy
+        </Link>
       </motion.p>
     </motion.div>
   );
@@ -253,7 +232,13 @@ function SignUpForm() {
 
 export default function SignUp() {
   return (
-    <Suspense fallback={<div style={{ color: "#64748b" }}>Loading…</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center py-12 text-sm text-zinc-400">
+          Loading auth portal…
+        </div>
+      }
+    >
       <SignUpForm />
     </Suspense>
   );
